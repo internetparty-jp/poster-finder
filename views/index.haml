@@ -1,0 +1,25 @@
+!!! 5
+%html
+  %head
+    %link{href: "/css/main.css", rel: "stylesheet"}/
+    %script{src: "http://code.jquery.com/jquery-2.0.3.js"}
+    %script{src: "/script/main.js"}
+    %title Poster Finder
+  %body
+    #wrap
+      #tweets
+        %h2 Twitter
+        %input{:type => :search, :name => :tweet_filter, :id => :tweet_filter, :size => 50}
+        %input{:type => :button, :value => '検索'}
+        %img.loading{:src => '/img/ajax-loader.gif'}
+        .content
+          %table
+      #issues
+        %h2 Shirasete
+        %select#categories{:name => :category}
+        %input{:type => :search, :name => :issue_filter, :id => :issue_filter, :size => 50}
+        %img.loading{:src => '/img/ajax-loader.gif'}
+        .content
+          %table
+      #mask
+        %img{:src => '/img/ajax-loader-large.gif'}

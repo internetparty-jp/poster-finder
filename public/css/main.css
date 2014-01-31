@@ -1,0 +1,64 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+#wrap {
+  width: 100%;
+}
+#tweets {
+  width: 50%;
+  float: left;
+}
+#issues {
+  width: 50%;
+  float: left;
+}
+.content {
+  border: solid;
+  border-width: 1px;
+  margin: 3px;
+  overflow: scroll;
+  height: 400px;
+}
+tr {
+  border: solid;
+  border-width: 1px;
+}
+td {
+  padding: 0.5em;
+}
+td.radio {
+  padding-right: 1em;
+}
+input[type="radio"] {
+  width: 2em;
+  height: 2em;
+}
+input.done_button {
+  font-size: 1em;
+}
+/* td {
+  border: solid;
+  border-width: 1px;
+} */
+tr.even {
+  background: #DDDDDD;
+}
+tr.odd {
+  background: #FFFFFF;
+}
+#mask {
+  position: absolute;
+  background: rgba(0,0,0,0.5);
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: center;
+}
+#mask img {
+  background-color: #FFFFFF;
+  padding: 5px;
+  border-radius: 3px;
+  margin: 200px;
+}
