@@ -124,7 +124,11 @@ get '/tweets.json' do
   #client = settings.twitter_client
   tweets = []
   client.search("to:posterdone #{filter_text}", :count => 100).each do |tweet|
-    tweets << {:id => tweet.id, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+    t = {:id => tweet.id, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+    if tweet.media[0]
+      t[:photo_uri] = tweet.media[0].media_uri.to_s
+    end
+    tweets << t
   end
   tweets.to_json
 end

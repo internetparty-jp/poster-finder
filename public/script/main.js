@@ -41,7 +41,7 @@ $(document).ready(function(){
     setStatsu('ふぁぼの取得完了');
   }, function(){
     $('#mask').css('visibility', 'hidden');  // visible/hidden
-    setStatsu('ふぁぼの取得失敗');
+    setStatsu('ふぁぼの取得失敗 <a href="/auth/twitter">Twitter認証をやりなおす</a>');
   });
 });
 
@@ -139,7 +139,12 @@ var getTweets = function(filterText) {
         if(!tweet.favorited && !Favorites[tweet.id]) {
           var radioID = 'tweet_' + tweet.id;
           var row = '<tr class="' + cellClass(i) + '" id="tweet_tr_' + tweet.id + '">';
-          row = row + '<td>' + tweet.text + '</td>';
+          if(tweet.photo_uri) {
+            row = row + '<td>' + tweet.text + '<img src="' + tweet.photo_uri+ '" /></td>';
+          }
+          else {
+            row = row + '<td>' + tweet.text + '</td>';
+          }
           row = row + '<td><a href="' + tweet.uri + '" target="_blank">見る</a></td>';
           row = row + '<td class="radio"><input type="radio" name="tweet_id" value="' + tweet.id + '" id="' + radioID + '"></td>';
           row = row + '</tr>';
@@ -249,6 +254,6 @@ var getFavorites = function(callback, errorback) {
 }
 
 var setStatsu = function(statusText) {
-  $('#status').text(statusText);
+  $('#status').html(statusText);
 }
 
