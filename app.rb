@@ -99,6 +99,26 @@ get '/tweets.json' do
   tweets.to_json
 end
 
+get '/favorites.json' do
+  client = settings.twitter_client
+  favorites = []
+  loop do
+    options = {:count => 100}
+    if favorites.count > 0
+      options[:max_id] = favorites.last - 1
+    end
+    _favorites = []
+    client.favorites('posterdone',  options).each do |t|
+      _favorites << t.id
+    end
+    p _favorites.count
+    break if _favorites.count == 0
+    favorites += _favorites
+  end
+  content_type :json
+  favorites.to_json
+end
+
 post '/favorite.json' do
   tweet_uri = params[:tweet_uri]
   p tweet_uri

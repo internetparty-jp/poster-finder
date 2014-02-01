@@ -6,33 +6,64 @@ var SelectedTweetURI;
 var SelectedTweetText;
 
 $(document).ready(function(){
-  console.log('Hello');
+  //console.log('Hello');
   $('img.loading').css('visibility', 'hidden');  // visible/hidden
   $('#mask').css('visibility', 'hidden');  // visible/hidden
   $('#categories').change(function() {
     var categoryID = parseInt($('#categories option:selected').attr('value'));
-    console.log(categoryID);
+    //console.log(categoryID);
     getIssues(categoryID);
     var filterText = Categories[categoryID];
-    $('#tweet_filter').attr('value', filterText);
+    //$('#tweet_filter').attr('value', filterText);
+    $('#tweet_filter').val(filterText);
     getTweets(filterText);
   });
   $('#issue_filter').change(function() {
-    $('#issues .content table tr').remove();
-    var value = $('#issue_filter').val();
-    var re = new RegExp(value);
-    console.log(value);
-    var filteredIssue = [];
-    for(var i=0; i<Issues.length; i++) {
-      var issue = Issues[i];
-      if(re.exec(issue.subject)) {
-        filteredIssue.push(issue);
-      }
-    }
-    setIssuesToTable(filteredIssue, function() {});
+    //$('#issues .content table tr').remove();
+    //var value = $('#issue_filter').val();
+    //var re = new RegExp(value);
+    //console.log(value);
+    //var filteredIssue = [];
+    //for(var i=0; i<Issues.length; i++) {
+    //  var issue = Issues[i];
+    //  if(re.exec(issue.subject)) {
+    //    filteredIssue.push(issue);
+    //  }
+    //}
+    //setIssuesToTable(filteredIssue, function() {});
+    filterIssue();
+  });
+  $('#filter_issues_button').click(function() {
+    //console.log('filter_issues_button');
+    filterIssue();
+  });
+  $('#tweet_filter').change(function() {
+    filterText = $('#tweet_filter').val();
+    console.log(filterText);
+    getTweets(filterText);
+  });
+  $('#search_tweets_button').click(function() {
+    filterText = $('#tweet_filter').val();
+    console.log(filterText);
+    getTweets(filterText);
   });
   getCategories();
 });
+
+var filterIssue = function() {
+  $('#issues .content table tr').remove();
+  var value = $('#issue_filter').val();
+  var re = new RegExp(value);
+  //console.log(value);
+  var filteredIssue = [];
+  for(var i=0; i<Issues.length; i++) {
+    var issue = Issues[i];
+    if(re.exec(issue.subject)) {
+      filteredIssue.push(issue);
+    }
+  }
+  setIssuesToTable(filteredIssue, function() {});
+}
 
 var getCategories = function() {
   Categories = {};
@@ -55,7 +86,7 @@ var getCategories = function() {
 }
 
 var getIssues = function(categoryID) {
-  console.log('getIssues');
+  //console.log('getIssues');
   $('#issues img.loading').css('visibility', 'visible');  // visible/hidden
   $('#issues .content table tr').remove();
   $.ajax({
@@ -72,8 +103,8 @@ var getIssues = function(categoryID) {
       });
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
-      console.log(textStatus);
-      console.log(errorThrown);
+      //console.log(textStatus);
+      //console.log(errorThrown);
       alert(textStatus);
       $('#issues img.loading').css('visibility', 'hidden');  // visible/hidden
     }
@@ -93,7 +124,7 @@ var setIssuesToTable = function(issues, callback) {
     row = row + '</tr>';
     //console.log(row);
     $('#issues .content table').append(row);
-    console.log(buttonID);
+    //console.log(buttonID);
     //$('#' + buttonID).click(onIssueButtonClick);
     $('#' + buttonID).click(getIssueButtonClickHandler(issue));
   }
@@ -140,7 +171,7 @@ var cellClass = function(index) {
 
 var getIssueButtonClickHandler = function(issue) {
   var f = function(e) {
-    console.log(issue.subject);
+    //console.log(issue.subject);
     var button = $(e.target);
     //var issueID = button.attr('data-issue-id');
     //var subject = button.val();
@@ -149,9 +180,9 @@ var getIssueButtonClickHandler = function(issue) {
       if(ok){
         $('#mask').css('visibility', 'visible');  // visible/hidden
         closeIssueWithTweetURI(issue.id, SelectedTweet.uri, function() {
-          console.log('closed');
+          //console.log('closed');
           favoriteTweet(SelectedTweet.uri, function() {
-            console.log('faved');
+            //console.log('faved');
             $('#issue_tr_' + parseInt(issue.id)).remove();
             $('#tweet_tr_' + SelectedTweet.id).remove();
             $('#mask').css('visibility', 'hidden');  // visible/hidden
@@ -168,7 +199,7 @@ var getIssueButtonClickHandler = function(issue) {
 
 var getTweetRadioButtonClickHandler = function(tweet) {
   var f = function(e) {
-    console.log(tweet.text);
+    //console.log(tweet.text);
     SelectedTweet = tweet;
   }
   return f;
@@ -180,7 +211,7 @@ var closeIssueWithTweetURI = function(issueID, tweetURI, callback) {
     'url': '/issues/' + issueID + '.json',
     'data': {'notes': tweetURI},
     'success': function(result) {
-      console.log(result);
+      //console.log(result);
       callback();
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
@@ -195,7 +226,7 @@ var favoriteTweet = function(tweetURI, callback) {
     'url': '/favorite.json',
     'data': {'tweet_uri': tweetURI},
     'success': function(result) {
-      console.log(result);
+      //console.log(result);
       callback();
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
