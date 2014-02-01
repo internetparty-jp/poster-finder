@@ -115,7 +115,13 @@ end
 get '/tweets.json' do
   content_type :json
   filter_text = params[:filter_text];
-  client = settings.twitter_client
+  client = Twitter::REST::Client.new do |config|
+    config.consumer_key        = TWITTER_CONSUMER_KEY
+    config.consumer_secret     = TWITTER_CONSUMER_SECRET
+    config.access_token        = session[:user_twitter_access_token]
+    config.access_token_secret = session[:user_twitter_access_token_secret]
+  end
+  #client = settings.twitter_client
   tweets = []
   client.search("to:posterdone #{filter_text}", :count => 100).each do |tweet|
     tweets << {:id => tweet.id, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
