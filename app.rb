@@ -3,6 +3,7 @@ require "sinatra/reloader" if development?
 require 'haml'
 require 'twitter'
 require 'faraday'
+require 'omniauth'
 require 'open-uri'
 require 'json'
 require 'pp'
@@ -17,6 +18,18 @@ SHIRASETE_BASE_URL = "http://beta.shirasete.jp/"
 SHIRASETE_CATEGORIES = "http://beta.shirasete.jp/projects/22/issue_categories.json?key=#{SHIRASETE_API_KEY}"
 
 configure do
+  use Rack::Auth::Basic do |username, password|
+    username == ENV['BASIC_AUTH_USERNAME'] && password == ENV['BASIC_AUTH_PASSWORD']
+  end
+
+  enable :sessions
+  set :session_secret, 'aeiha3889aow'
+  enable :sessions, :logging
+
+  use OmniAuth::Builder do
+    provider :twitter, TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET
+  end
+
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
     config.consumer_secret     = TWITTER_CONSUMER_SECRET
@@ -36,7 +49,18 @@ configure do
 end
 
 get '/' do
-  haml :index, :layout => nil
+  if session[:user_twitter_access_token] and session[:user_twitter_access_token_secret]
+    haml :index, :layout => nil
+  else
+    redirect '/auth/twitter'
+  end
+end
+
+get '/auth/:name/callback' do
+  auth = request.env["omniauth.auth"]
+  session[:user_twitter_access_token] = auth.credentials.token
+  session[:user_twitter_access_token_secret] = auth.credentials.secret
+  redirect '/'
 end
 
 get '/categories.json' do
@@ -100,7 +124,13 @@ get '/tweets.json' do
 end
 
 get '/favorites.json' do
-  client = settings.twitter_client
+  client = Twitter::REST::Client.new do |config|
+    config.consumer_key        = TWITTER_CONSUMER_KEY
+    config.consumer_secret     = TWITTER_CONSUMER_SECRET
+    config.access_token        = session[:user_twitter_access_token]
+    config.access_token_secret = session[:user_twitter_access_token_secret]
+  end
+  #client = settings.twitter_client
   favorites = []
   loop do
     options = {:count => 100}

@@ -11,6 +11,7 @@ GEM
       multipart-post (>= 1.2, < 3)
     haml (4.0.5)
       tilt
+    hashie (2.0.5)
     http (0.5.0)
       http_parser.rb
     http_parser.rb (0.6.0)
@@ -20,6 +21,16 @@ GEM
     multi_json (1.8.4)
     multipart-post (2.0.0)
     naught (1.0.0)
+    oauth (0.4.7)
+    omniauth (1.2.1)
+      hashie (>= 1.2, < 3)
+      rack (~> 1.0)
+    omniauth-oauth (1.0.1)
+      oauth
+      omniauth (~> 1.0)
+    omniauth-twitter (1.0.1)
+      multi_json (~> 1.3)
+      omniauth-oauth (~> 1.0)
     rack (1.5.2)
     rack-protection (1.5.2)
       rack
@@ -59,6 +70,8 @@ PLATFORMS
 DEPENDENCIES
   faraday
   haml
+  omniauth
+  omniauth-twitter
   sinatra
   sinatra-contrib
   twitter

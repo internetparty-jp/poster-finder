@@ -2,13 +2,12 @@ var Categories;
 var Issues;
 var SelectedIssueSubject;
 var SelectedTweet;
-var SelectedTweetURI;
-var SelectedTweetText;
+var Favorites = {};
 
 $(document).ready(function(){
   //console.log('Hello');
   $('img.loading').css('visibility', 'hidden');  // visible/hidden
-  $('#mask').css('visibility', 'hidden');  // visible/hidden
+  //$('#mask').css('visibility', 'hidden');  // visible/hidden
   $('#categories').change(function() {
     var categoryID = parseInt($('#categories option:selected').attr('value'));
     //console.log(categoryID);
@@ -19,18 +18,6 @@ $(document).ready(function(){
     getTweets(filterText);
   });
   $('#issue_filter').change(function() {
-    //$('#issues .content table tr').remove();
-    //var value = $('#issue_filter').val();
-    //var re = new RegExp(value);
-    //console.log(value);
-    //var filteredIssue = [];
-    //for(var i=0; i<Issues.length; i++) {
-    //  var issue = Issues[i];
-    //  if(re.exec(issue.subject)) {
-    //    filteredIssue.push(issue);
-    //  }
-    //}
-    //setIssuesToTable(filteredIssue, function() {});
     filterIssue();
   });
   $('#filter_issues_button').click(function() {
@@ -48,6 +35,14 @@ $(document).ready(function(){
     getTweets(filterText);
   });
   getCategories();
+  setStatsu('ふぁぼを取得中');
+  getFavorites(function() {
+    $('#mask').css('visibility', 'hidden');  // visible/hidden
+    setStatsu('ふぁぼの取得完了');
+  }, function(){
+    $('#mask').css('visibility', 'hidden');  // visible/hidden
+    setStatsu('ふぁぼの取得失敗');
+  });
 });
 
 var filterIssue = function() {
@@ -141,7 +136,7 @@ var getTweets = function(filterText) {
       //console.log(tweets);
       for(var i=0; i<tweets.length; i++) {
         var tweet = tweets[i];
-        if(!tweet.favorited) {
+        if(!tweet.favorited && !Favorites[tweet.id]) {
           var radioID = 'tweet_' + tweet.id;
           var row = '<tr class="' + cellClass(i) + '" id="tweet_tr_' + tweet.id + '">';
           row = row + '<td>' + tweet.text + '</td>';
@@ -235,14 +230,25 @@ var favoriteTweet = function(tweetURI, callback) {
   });
 }
 
-//var onTweetRadioClick = function(e) {
-//
-//}
-//
-//var returnhandler = function(x) {
-//  var f = function(e) {
-//    console.log(x);
-//  }
-//  return f;
-//}
+var getFavorites = function(callback, errorback) {
+  $.ajax({
+    'type': 'GET',
+    'url': '/favorites.json',
+    'data': {},
+    'success': function(favorites) {
+      for(var i=0; i<favorites.length; i++) {
+        Favorites[favorites[i]] = true;
+      }
+      callback();
+    },
+    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+      alert(textStatus);
+      errorback();
+    }
+  });
+}
+
+var setStatsu = function(statusText) {
+  $('#status').text(statusText);
+}
 
