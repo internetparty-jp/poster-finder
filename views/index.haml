@@ -20,7 +20,8 @@
       #issues
         %h2 Shirasete
         %select#categories{:name => :category}
-        %input{:type => :search, :name => :issue_filter, :id => :issue_filter, :size => 50}
+        %input{:type => :checkbox, :name => :enable_auto_search, :id => :enable_auto_search, :checked => :true} 区名でTwitter検索する
+        %input{:type => :search, :name => :issue_filter, :id => :issue_filter, :size => 30}
         %input{:type => :button, :value => '絞り込み', :id => 'filter_issues_button'}
         %img.loading{:src => '/img/ajax-loader.gif'}
         .content

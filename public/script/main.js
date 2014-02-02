@@ -2,7 +2,7 @@ var Categories;
 var Issues;
 var SelectedIssueSubject;
 var SelectedTweet;
-var Favorites = {};
+//var Favorites = {};
 
 $(document).ready(function(){
   //console.log('Hello');
@@ -12,10 +12,12 @@ $(document).ready(function(){
     var categoryID = parseInt($('#categories option:selected').attr('value'));
     //console.log(categoryID);
     getIssues(categoryID);
-    var filterText = Categories[categoryID];
-    //$('#tweet_filter').attr('value', filterText);
-    $('#tweet_filter').val(filterText);
-    getTweets(filterText);
+    if($('#enable_auto_search').prop("checked")){ 
+      var filterText = Categories[categoryID];
+      //$('#tweet_filter').attr('value', filterText);
+      $('#tweet_filter').val(filterText);
+      getTweets(filterText);
+    }
   });
   $('#issue_filter').change(function() {
     filterIssue();
@@ -35,14 +37,15 @@ $(document).ready(function(){
     getTweets(filterText);
   });
   getCategories();
-  setStatsu('ふぁぼを取得中');
-  getFavorites(function() {
-    $('#mask').css('visibility', 'hidden');  // visible/hidden
-    setStatsu('ふぁぼの取得完了');
-  }, function(){
-    $('#mask').css('visibility', 'hidden');  // visible/hidden
-    setStatsu('ふぁぼの取得失敗 <a href="/auth/twitter">Twitter認証をやりなおす</a>');
-  });
+  //setStatsu('ふぁぼを取得中');
+  //getFavorites(function() {
+  //  $('#mask').css('visibility', 'hidden');  // visible/hidden
+  //  setStatsu('ふぁぼの取得完了');
+  //}, function(){
+  //  $('#mask').css('visibility', 'hidden');  // visible/hidden
+  //  setStatsu('ふぁぼの取得失敗 <a href="/auth/twitter">Twitter認証をやりなおす</a>');
+  //});
+  $('#mask').css('visibility', 'hidden');  // visible/hidden
 });
 
 var filterIssue = function() {
@@ -136,7 +139,8 @@ var getTweets = function(filterText) {
       //console.log(tweets);
       for(var i=0; i<tweets.length; i++) {
         var tweet = tweets[i];
-        if(!tweet.favorited && !Favorites[tweet.id]) {
+        //if(!tweet.favorited && !Favorites[tweet.id]) {
+        if(true) {
           var radioID = 'tweet_' + tweet.id;
           var row = '<tr class="' + cellClass(i) + '" id="tweet_tr_' + tweet.id + '">';
           if(tweet.photo_uri) {
@@ -150,11 +154,11 @@ var getTweets = function(filterText) {
           row = row + '</tr>';
           //console.log(row);
           $('#tweets .content table').append(row);
-          $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
           //$('#' + radioID).click(onTweetRadioClick);
           $('#' + radioID).click(getTweetRadioButtonClickHandler(tweet));
         }
       }
+      $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
     }
   });
 }
@@ -181,7 +185,7 @@ var getIssueButtonClickHandler = function(issue) {
         $('#mask').css('visibility', 'visible');  // visible/hidden
         closeIssueWithTweetURI(issue.id, SelectedTweet.uri, function() {
           //console.log('closed');
-          favoriteTweet(SelectedTweet.uri, function() {
+          favoriteTweet(SelectedTweet, function() {
             //console.log('faved');
             $('#issue_tr_' + parseInt(issue.id)).remove();
             $('#tweet_tr_' + SelectedTweet.id).remove();
@@ -220,11 +224,11 @@ var closeIssueWithTweetURI = function(issueID, tweetURI, callback) {
   });
 }
 
-var favoriteTweet = function(tweetURI, callback) {
+var favoriteTweet = function(tweet, callback) {
   $.ajax({
     'type': 'POST',
     'url': '/favorite.json',
-    'data': {'tweet_uri': tweetURI},
+    'data': {'tweet_id': tweet.id, 'tweet_uri': tweet.uri},
     'success': function(result) {
       //console.log(result);
       callback();
@@ -235,23 +239,24 @@ var favoriteTweet = function(tweetURI, callback) {
   });
 }
 
-var getFavorites = function(callback, errorback) {
-  $.ajax({
-    'type': 'GET',
-    'url': '/favorites.json',
-    'data': {},
-    'success': function(favorites) {
-      for(var i=0; i<favorites.length; i++) {
-        Favorites[favorites[i]] = true;
-      }
-      callback();
-    },
-    'error': function(XMLHttpRequest, textStatus, errorThrown) {
-      alert(textStatus);
-      errorback();
-    }
-  });
-}
+//var getFavorites = function(callback, errorback) {
+//  $.ajax({
+//    'type': 'GET',
+//    'url': '/favorites.json',
+//    'data': {},
+//    'success': function(favorites) {
+//      console.log(favorites.length);
+//      for(var i=0; i<favorites.length; i++) {
+//        Favorites[favorites[i]] = true;
+//      }
+//      callback();
+//    },
+//    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+//      alert(textStatus);
+//      errorback();
+//    }
+//  });
+//}
 
 var setStatsu = function(statusText) {
   $('#status').html(statusText);
