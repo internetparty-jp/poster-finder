@@ -15,18 +15,8 @@ TWITTER_CONSUMER_SECRET = ENV['TWITTER_CONSUMER_SECRET']
 
 desc 'import favs'
 task :dig_favorites do
-  if REDISTOGO_URL
-    uri = URI.parse(REDISTOGO_URL)
-    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
-  else
-    redis = Redis.new
-  end
-  client = Twitter::REST::Client.new do |config|
-    config.consumer_key        = TWITTER_CONSUMER_KEY
-    config.consumer_secret     = TWITTER_CONSUMER_SECRET
-    config.access_token        = TWITTER_ACCESS_TOKEN
-    config.access_token_secret = TWITTER_ACCESS_SECRET
-  end
+  redis = redisClient
+  client = twitterClient
 
   options = {:count => 100}
   if min_id = redis.hkeys(REDIS_KEY).min
@@ -41,5 +31,25 @@ task :dig_favorites do
 
   favorites = redis.hkeys(REDIS_KEY)
   puts "total: #{favorites.count}"
+end
+
+def redisClient
+  if REDISTOGO_URL
+    uri = URI.parse(REDISTOGO_URL)
+    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  else
+    redis = Redis.new
+  end
+  return redis
+end
+
+def twitterClient
+  client = Twitter::REST::Client.new do |config|
+    config.consumer_key        = TWITTER_CONSUMER_KEY
+    config.consumer_secret     = TWITTER_CONSUMER_SECRET
+    config.access_token        = TWITTER_ACCESS_TOKEN
+    config.access_token_secret = TWITTER_ACCESS_SECRET
+  end
+  return client
 end
 
