@@ -29,7 +29,8 @@ task :dig_favorites do
   end
 
   options = {:count => 100}
-  if min_id = redis.hkeys(REDIS_KEY).min.to_i
+  if min_id = redis.hkeys(REDIS_KEY).min
+    min_id = min_id.to_i
     options[:max_id] = min_id - 1
   end
 
