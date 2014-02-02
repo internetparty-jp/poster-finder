@@ -33,6 +33,26 @@ task :dig_favorites do
   puts "total: #{favorites.count}"
 end
 
+#desc 'import favs'
+#task :dig_favorites do
+#  redis = redisClient
+#  client = twitterClient
+#
+#  options = {:count => 100}
+#  #if min_id = redis.hkeys(REDIS_KEY).min
+#  #  min_id = min_id.to_i
+#  #  options[:max_id] = min_id - 1
+#  #end
+#
+#  client.favorites('posterdone', options).each do |t|
+#    p t.id
+#    redis.hset(REDIS_KEY, t.id, true)
+#  end
+#
+#  favorites = redis.hkeys(REDIS_KEY)
+#  puts "total: #{favorites.count}"
+#end
+
 def redisClient
   if REDISTOGO_URL
     uri = URI.parse(REDISTOGO_URL)

@@ -136,8 +136,8 @@ get '/tweets.json' do
   #client = settings.twitter_client
   tweets = []
   client.search("to:posterdone #{filter_text}", :count => 100).each do |tweet|
-    if !redis.hget(REDIS_KEY, tweet.id)
-      t = {:id => tweet.id, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+    if !redis.hget(REDIS_KEY, tweet.id.to_s)
+      t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
       if tweet.media[0]
         t[:photo_uri] = tweet.media[0].media_uri.to_s
       end
@@ -194,8 +194,8 @@ post '/favorite.json' do
   client = settings.twitter_client
   ts = client.favorite(tweet_uri)
   t = ts.first
-  redis.hset(REDIS_KEY, t.id, true)
-  puts "hget: #{redis.hget(REDIS_KEY, tweet_id)}"
+  redis.hset(REDIS_KEY, t.id.to_s, true)
+  puts "hget: #{redis.hget(REDIS_KEY, t.id.to_s)}"
   {}.to_json
 end
 

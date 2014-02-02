@@ -28,12 +28,12 @@ $(document).ready(function(){
   });
   $('#tweet_filter').change(function() {
     filterText = $('#tweet_filter').val();
-    console.log(filterText);
+    //console.log(filterText);
     getTweets(filterText);
   });
   $('#search_tweets_button').click(function() {
     filterText = $('#tweet_filter').val();
-    console.log(filterText);
+    //console.log(filterText);
     getTweets(filterText);
   });
   getCategories();
@@ -225,6 +225,7 @@ var closeIssueWithTweetURI = function(issueID, tweetURI, callback) {
 }
 
 var favoriteTweet = function(tweet, callback) {
+  console.log(tweet.id);
   $.ajax({
     'type': 'POST',
     'url': '/favorite.json',
