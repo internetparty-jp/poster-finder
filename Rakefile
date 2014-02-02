@@ -51,6 +51,7 @@ task :import_recent_favorites do
   end
 
   favorites = redis.hkeys(REDIS_KEY)
+  puts "min id: #{favorites.min}"
   puts "total: #{favorites.count}"
 end
 
