@@ -35,14 +35,15 @@ end
 
 desc 'import recent favs'
 task :import_recent_favorites do
+  max_id = ENV['MAX_ID']
+
   redis = redisClient
   client = twitterClient
 
   options = {:count => 100}
-  #if min_id = redis.hkeys(REDIS_KEY).min
-  #  min_id = min_id.to_i
-  #  options[:max_id] = min_id - 1
-  #end
+  if max_id
+    options[:max_id] = max_id.to_s
+  end
 
   client.favorites('posterdone', options).each do |t|
     p t.id
