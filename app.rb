@@ -150,7 +150,7 @@ get '/tweets.json' do
       if tweet.text =~ /posterdone/
         if tweet.favorited
           redis.hset(REDIS_KEY, tweet.id.to_s, true)
-        else
+        elsif !redis.hget(REDIS_KEY, tweet.id.to_s)
           t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
           if tweet.media[0]
             t[:photo_uri] = tweet.media[0].media_uri.to_s
