@@ -149,7 +149,7 @@ get '/tweets.json' do
     loop do
       options[:max_id] = tweet_objects.last.id.to_i-1 if tweet_objects.count > 0
       _tweet_objects = client.user_timeline(screen_name, options)
-      pp _tweet_objects
+      #pp _tweet_objects
       p _tweet_objects.count
       break if _tweet_objects.count <= 0
       tweet_objects += _tweet_objects
@@ -168,7 +168,7 @@ get '/tweets.json' do
         end # if
       end # if
     end
-    pp tweets
+    #pp tweets
 
     #loop do
     #  _tweets = []
