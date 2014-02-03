@@ -225,11 +225,11 @@ post '/favorite.json' do
     p ts
     #if t = ts.first
     #end
-    redis.hset(REDIS_KEY, tweet_id, true)
-    puts "hget: #{redis.hget(REDIS_KEY, tweet_id)}"
   rescue => e
     puts "#{tweet_id}: #{e}"
   end
+  redis.hset(REDIS_KEY, tweet_id, true)
+  puts "hget: #{redis.hget(REDIS_KEY, tweet_id)}"
   {}.to_json
 end
 
