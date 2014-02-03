@@ -219,9 +219,13 @@ post '/favorite.json' do
   content_type :json
   client = settings.twitter_client
   ts = client.favorite(tweet_uri)
-  t = ts.first
-  redis.hset(REDIS_KEY, t.id.to_s, true)
-  puts "hget: #{redis.hget(REDIS_KEY, t.id.to_s)}"
+  p tweet_uri
+  p tweet_id
+  p ts
+  #if t = ts.first
+  #end
+  redis.hset(REDIS_KEY, tweet_id, true)
+  puts "hget: #{redis.hget(REDIS_KEY, tweet_id)}"
   {}.to_json
 end
 
