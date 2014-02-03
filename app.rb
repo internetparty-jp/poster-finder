@@ -126,7 +126,9 @@ end
 
 get '/tweets.json' do
   redis = settings.redis
-  filter_text = params[:filter_text];
+  filter_text = params[:filter_text]
+  max_id = params[:max_id]
+  p max_id
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
     config.consumer_secret     = TWITTER_CONSUMER_SECRET
@@ -134,8 +136,12 @@ get '/tweets.json' do
     config.access_token_secret = session[:user_twitter_access_token_secret]
   end
   #client = settings.twitter_client
+  options = {:count => 100}
+  if max_id
+    options[:max_id] = max_id.to_i - 1
+  end
   tweets = []
-  client.search("to:posterdone #{filter_text}", :count => 100).each do |tweet|
+  client.search("to:posterdone #{filter_text}", options).each do |tweet|
     if !redis.hget(REDIS_KEY, tweet.id.to_s)
       t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
       if tweet.media[0]

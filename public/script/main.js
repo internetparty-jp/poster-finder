@@ -2,6 +2,7 @@ var Categories;
 var Issues;
 var SelectedIssueSubject;
 var SelectedTweet;
+var LastTweetID;
 //var Favorites = {};
 
 $(document).ready(function(){
@@ -29,12 +30,22 @@ $(document).ready(function(){
   $('#tweet_filter').change(function() {
     filterText = $('#tweet_filter').val();
     //console.log(filterText);
-    getTweets(filterText);
+    removeTweets();
+    getTweets(filterText, function(){}, function(){});
   });
   $('#search_tweets_button').click(function() {
     filterText = $('#tweet_filter').val();
     //console.log(filterText);
-    getTweets(filterText);
+    //getTweets(filterText);
+    removeTweets();
+    getTweets(filterText, function(){}, function(){});
+  });
+  $('#next_100_button').click(function() {
+    filterText = $('#tweet_filter').val();
+    //console.log(filterText);
+    //getTweets(filterText);
+    //removeTweets();
+    getTweets(filterText, function(){}, function(){});
   });
   getCategories();
   //setStatsu('ふぁぼを取得中');
@@ -129,12 +140,17 @@ var setIssuesToTable = function(issues, callback) {
   callback();
 }
 
-var getTweets = function(filterText) {
-  $('#tweets img.loading').css('visibility', 'visible');  // visible/hidden
+var removeTweets = function() {
   $('#tweets .content table tr').remove();
+  LastTweetID = null;
+}
+
+var getTweets = function(filterText, callback, errorback) {
+  $('#tweets img.loading').css('visibility', 'visible');  // visible/hidden
+  //$('#tweets .content table tr').remove();
   $.ajax({
     'url': '/tweets.json',
-    'data': {'filter_text': filterText},
+    'data': {'filter_text': filterText, 'max_id': LastTweetID},
     'success': function(tweets) {
       //console.log(tweets);
       for(var i=0; i<tweets.length; i++) {
@@ -158,7 +174,15 @@ var getTweets = function(filterText) {
           $('#' + radioID).click(getTweetRadioButtonClickHandler(tweet));
         }
       }
+      console.log(tweets);
+      t = tweets[tweets.length-1];
+      LastTweetID = t.id.to_s;
+      console.log(LastTweetID);
       $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
+      callback();
+    },
+    'error': function() {
+      errorback();
     }
   });
 }
