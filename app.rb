@@ -146,7 +146,8 @@ get '/tweets.json' do
   tweets = []
   if screen_name
      client.user_timeline(screen_name, options).each do |tweet|
-      if tweet.in_reply_to_screen_name == 'posterdone'
+      #if tweet.in_reply_to_screen_name == 'posterdone'
+      if tweet.text =~ /posterdone/
         if tweet.favorited
           redis.hset(REDIS_KEY, tweet.id.to_s, true)
         else
@@ -159,7 +160,7 @@ get '/tweets.json' do
       end
     end   
   else
-    client.search("to:posterdone #{filter_text}", options).each do |tweet|
+    client.search("posterdone #{filter_text}", options).each do |tweet|
       if !redis.hget(REDIS_KEY, tweet.id.to_s)
         t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
         if tweet.media[0]
