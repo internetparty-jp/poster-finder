@@ -195,6 +195,8 @@ var getTweets = function(opts) {
         if(true) {
           var radioID = 'tweet_' + tweet.id;
           var row = '<tr class="' + cellClass(i) + '" id="tweet_tr_' + tweet.id + '">';
+          var buttonID = 'already_favorited_button_' + tweet.id;
+          row = row + '<td><input type="button" id="' + buttonID + '" value="終了済"></td>';
           if(tweet.photo_uri) {
             row = row + '<td>' + tweet.text + '<img src="' + tweet.photo_uri+ '" /></td>';
           }
@@ -207,6 +209,7 @@ var getTweets = function(opts) {
           //console.log(row);
           $('#tweets .content table').append(row);
           //$('#' + radioID).click(onTweetRadioClick);
+          $('#' + buttonID).click(getAlreadyFavoritedButtonClickHandler(tweet));
           $('#' + radioID).click(getTweetRadioButtonClickHandler(tweet));
         }
       }
@@ -253,7 +256,7 @@ var getIssueButtonClickHandler = function(issue) {
           //console.log('closed');
           favoriteTweet(SelectedTweet, function() {
             //console.log('faved');
-            $('#issue_tr_' + parseInt(issue.id)).remove();
+            $('#issue_tr_' + issue.id).remove();
             $('#tweet_tr_' + SelectedTweet.id).remove();
             $('#mask').css('visibility', 'hidden');  // visible/hidden
           });
@@ -271,6 +274,20 @@ var getTweetRadioButtonClickHandler = function(tweet) {
   var f = function(e) {
     //console.log(tweet.text);
     SelectedTweet = tweet;
+  }
+  return f;
+}
+
+var getAlreadyFavoritedButtonClickHandler = function(tweet) {
+  var f = function(e) {
+    var ok = window.confirm('報告:"' + tweet.text + '" をチェック済みツィートとして記録します');
+    if(ok) {
+      $('#mask').css('visibility', 'visible');  // visible/hidden
+      favoriteTweet(tweet, function() {
+        $('#tweet_tr_' + tweet.id).remove();
+        $('#mask').css('visibility', 'hidden');  // visible/hidden
+      });
+    }
   }
   return f;
 }
