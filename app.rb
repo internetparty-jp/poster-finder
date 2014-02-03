@@ -127,8 +127,11 @@ end
 get '/tweets.json' do
   redis = settings.redis
   filter_text = params[:filter_text]
+  screen_name = params[:screen_name]
   max_id = params[:max_id]
-  p max_id
+  puts "max_id: #{max_id}"
+  puts "filter_text: #{filter_text}"
+  puts "screen_name: #{screen_name}"
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
     config.consumer_secret     = TWITTER_CONSUMER_SECRET
@@ -141,13 +144,29 @@ get '/tweets.json' do
     options[:max_id] = max_id.to_i - 1
   end
   tweets = []
-  client.search("to:posterdone #{filter_text}", options).each do |tweet|
-    if !redis.hget(REDIS_KEY, tweet.id.to_s)
-      t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
-      if tweet.media[0]
-        t[:photo_uri] = tweet.media[0].media_uri.to_s
+  if screen_name
+     client.user_timeline(screen_name, options).each do |tweet|
+      if tweet.in_reply_to_screen_name == 'posterdone'
+        if tweet.favorited
+          redis.hset(REDIS_KEY, tweet.id.to_s, true)
+        else
+          t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+          if tweet.media[0]
+            t[:photo_uri] = tweet.media[0].media_uri.to_s
+          end
+          tweets << t
+        end
       end
-      tweets << t
+    end   
+  else
+    client.search("to:posterdone #{filter_text}", options).each do |tweet|
+      if !redis.hget(REDIS_KEY, tweet.id.to_s)
+        t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+        if tweet.media[0]
+          t[:photo_uri] = tweet.media[0].media_uri.to_s
+        end
+        tweets << t
+      end
     end
   end
   content_type :json

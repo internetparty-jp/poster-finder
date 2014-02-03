@@ -27,25 +27,36 @@ $(document).ready(function(){
     //console.log('filter_issues_button');
     filterIssue();
   });
-  $('#tweet_filter').change(function() {
-    filterText = $('#tweet_filter').val();
-    //console.log(filterText);
-    removeTweets();
-    getTweets(filterText, function(){}, function(){});
-  });
+  //$('#tweet_filter').change(function() {
+  //  filterText = $('#tweet_filter').val();
+  //  //console.log(filterText);
+  //  removeTweets();
+  //  getTweets(filterText, function(){}, function(){});
+  //});
   $('#search_tweets_button').click(function() {
-    filterText = $('#tweet_filter').val();
     //console.log(filterText);
     //getTweets(filterText);
     removeTweets();
-    getTweets(filterText, function(){}, function(){});
+    //var type = $('input[name="search_type"]:checked').val();
+    //if(type == 'keyword') {
+    //  filterText = $('#tweet_filter').val();
+    //  getTweets({'type': type, 'keyword': filterText});
+    //}
+    //else if(type == 'screen_name') {
+    //  screenName = $('#screen_name').val();
+    //  getTweets({'type': type, 'screen_name': screenName});
+    //}
+    beforeGetTweet();
   });
   $('#next_100_button').click(function() {
     filterText = $('#tweet_filter').val();
     //console.log(filterText);
     //getTweets(filterText);
     //removeTweets();
-    getTweets(filterText, function(){}, function(){});
+    //getTweets();
+    //var type = $('input[name="search_type"]:checked').val();
+    //getTweets({'type': type, 'keyword': filterText});
+    beforeGetTweet();
   });
   getCategories();
   //setStatsu('ふぁぼを取得中');
@@ -58,6 +69,18 @@ $(document).ready(function(){
   //});
   $('#mask').css('visibility', 'hidden');  // visible/hidden
 });
+
+var beforeGetTweet = function() {
+  var type = $('input[name="search_type"]:checked').val();
+  if(type == 'keyword') {
+    filterText = $('#tweet_filter').val();
+    getTweets({'type': type, 'keyword': filterText});
+  }
+  else if(type == 'screen_name') {
+    screenName = $('#screen_name').val();
+    getTweets({'type': type, 'screen_name': screenName});
+  }
+}
 
 var filterIssue = function() {
   $('#issues .content table tr').remove();
@@ -145,12 +168,25 @@ var removeTweets = function() {
   LastTweetID = null;
 }
 
-var getTweets = function(filterText, callback, errorback) {
+var getTweets = function(opts) {
   $('#tweets img.loading').css('visibility', 'visible');  // visible/hidden
   //$('#tweets .content table tr').remove();
+  var callback = opts['callback'];
+  var errorback = opts['errorback'];
+  var data = {};
+  console.log(opts);
+  if(opts['type'] == 'screen_name') {
+    data['screen_name'] = opts['screen_name'];
+  }
+  else {
+    data['filter_text'] = opts['keyword'];
+  }
+  if(LastTweetID){
+    data['max_id'] = LastTweetID;
+  }
   $.ajax({
     'url': '/tweets.json',
-    'data': {'filter_text': filterText, 'max_id': LastTweetID},
+    'data': data,
     'success': function(tweets) {
       //console.log(tweets);
       for(var i=0; i<tweets.length; i++) {
@@ -175,14 +211,20 @@ var getTweets = function(filterText, callback, errorback) {
         }
       }
       console.log(tweets);
-      t = tweets[tweets.length-1];
-      LastTweetID = t.id.to_s;
-      console.log(LastTweetID);
+      if(tweets.length > 0) {
+        var t = tweets[tweets.length-1];
+        LastTweetID = t.id;
+        console.log(LastTweetID);
+      }
       $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
-      callback();
+      if(callback) {
+        callback();
+      }
     },
     'error': function() {
-      errorback();
+      if(errorback) {
+        errorback();
+      }
     }
   });
 }
