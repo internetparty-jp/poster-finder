@@ -17,7 +17,9 @@ $(document).ready(function(){
       var filterText = Categories[categoryID];
       //$('#tweet_filter').attr('value', filterText);
       $('#tweet_filter').val(filterText);
-      getTweets(filterText);
+      //getTweets(filterText);
+      removeTweets();
+      beforeGetTweet();
     }
   });
   $('#issue_filter').change(function() {
@@ -224,7 +226,8 @@ var getTweets = function(opts) {
         callback();
       }
     },
-    'error': function() {
+    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+      alert('getTweets: ' + textStatus);
       if(errorback) {
         errorback();
       }
