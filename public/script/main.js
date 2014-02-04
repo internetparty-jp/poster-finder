@@ -261,6 +261,7 @@ var getIssueButtonClickHandler = function(issue) {
             //console.log('faved');
             $('#issue_tr_' + issue.id).remove();
             $('#tweet_tr_' + SelectedTweet.id).remove();
+            SelectedTweet = null;
             $('#mask').css('visibility', 'hidden');  // visible/hidden
           });
         });
@@ -288,6 +289,7 @@ var getAlreadyFavoritedButtonClickHandler = function(tweet) {
       $('#mask').css('visibility', 'visible');  // visible/hidden
       favoriteTweet(tweet, function() {
         $('#tweet_tr_' + tweet.id).remove();
+        SelectedTweet = null;
         $('#mask').css('visibility', 'hidden');  // visible/hidden
       });
     }
@@ -318,7 +320,6 @@ var favoriteTweet = function(tweet, callback) {
     'data': {'tweet_id': tweet.id, 'tweet_uri': tweet.uri},
     'success': function(result) {
       //console.log(result);
-      SelectedTweet = null;
       callback();
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
