@@ -169,38 +169,6 @@ get '/tweets.json' do
       end # if
     end
     #pp tweets
-
-    #loop do
-    #  _tweets = []
-    #  p tweets
-    #  if tweets.count > 0
-    #    options[:max_id] = tweets.last[:id].to_i - 1
-    #  end
-    #  begin
-    #    client.user_timeline(screen_name, options).each do |tweet|
-    #      #if tweet.in_reply_to_screen_name == 'posterdone'
-    #      if tweet.text =~ /posterdone/
-    #        if tweet.favorited
-    #          redis.hset(REDIS_KEY, tweet.id.to_s, true)
-    #        elsif !redis.hget(REDIS_KEY, tweet.id.to_s)
-    #          t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
-    #          if tweet.media[0]
-    #            t[:photo_uri] = tweet.media[0].media_uri.to_s
-    #          end
-    #          _tweets << t
-    #        end # if
-    #      end # if
-    #    end #do
-    #  rescue => e
-    #     e
-    #    break
-    #  end
-    #  puts "#{screen_name}: #{_tweets.count}"
-    #  if _tweets.count <= 0
-    #    break
-    #  end
-    #  tweets += _tweets
-    #end # loop
   else
     client.search("posterdone #{filter_text}", options).each do |tweet|
       if !redis.hget(REDIS_KEY, tweet.id.to_s)

@@ -9,6 +9,7 @@
     #mask
       %img{:src => '/img/ajax-loader-large.gif'}
     %p#status
+      %a{:href => ''} （はじめにお読みください）操作マニュアル
     #wrap
       #tweets
         %h2 Twitter
@@ -22,7 +23,7 @@
         %img.loading{:src => '/img/ajax-loader.gif'}
         .content
           %table
-        %input{:type => :button, :value => '次の100件を取得', :id => :next_100_button}
+        -#%input{:type => :button, :value => '次の100件を取得', :id => :next_100_button}
       #issues
         %h2 Shirasete
         %select#categories{:name => :category}
