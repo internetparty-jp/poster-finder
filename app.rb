@@ -156,7 +156,7 @@ get '/tweets.json' do
       break if tweet_objects.count > 1000
     end
     tweet_objects.each do |tweet|
-      if tweet.text =~ /posterdone/
+      if tweet.text =~ /posterdone/ or tweet.text =~ /#家入ポスター貼ってるってよ/
         if tweet.favorited
           redis.hset(REDIS_KEY, tweet.id.to_s, true)
         elsif !redis.hget(REDIS_KEY, tweet.id.to_s)
