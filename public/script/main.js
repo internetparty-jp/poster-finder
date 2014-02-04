@@ -318,6 +318,7 @@ var favoriteTweet = function(tweet, callback) {
     'data': {'tweet_id': tweet.id, 'tweet_uri': tweet.uri},
     'success': function(result) {
       //console.log(result);
+      SelectedTweet = null;
       callback();
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
