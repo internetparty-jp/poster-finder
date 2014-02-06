@@ -250,7 +250,8 @@ var getTweets = function(opts) {
       }
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
-      alert('getTweets: ' + textStatus);
+      //alert('getTweets: ' + textStatus);
+      alert('TwitterAPIが上限に達したか、鍵アカウントのツィートを読み込もうとしました。\nユーザの切り替えを試してみてください。');
       if(errorback) {
         errorback();
       }
