@@ -190,6 +190,7 @@ var setIssuesToTable = function(issues, callback) {
 var removeTweets = function() {
   $('#tweets .content table tr').remove();
   LastTweetID = null;
+  SelectedTweet = null;
 }
 
 var getTweets = function(opts) {
