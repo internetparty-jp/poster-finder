@@ -33,7 +33,7 @@ td.radio {
 td img {
   max-width: 480px;
 }
-input[type="radio"] {
+td input[type="radio"] {
   width: 2em;
   height: 2em;
 }

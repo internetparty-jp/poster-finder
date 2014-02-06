@@ -10,15 +10,17 @@
       %img{:src => '/img/ajax-loader-large.gif'}
     %p#status
       %a{:href => 'https://docs.google.com/document/d/1K11vD7mYJTtC-BmFsicOIb_07YH1chh60QqLEmn6Xs8/edit?usp=sharing', :target => '_blank'} （はじめにお読みください）操作マニュアル
+      %a{:href => '/auth/twitter'} Twitterユーザの切り替え
     #wrap
       #tweets
         %h2 Twitter
         %input{:type => :radio, :name => :search_type, :value => :keyword, :checked => :checked}
         %label{:for => :tweet_filter} キーワード:
-        %input{:type => :search, :name => :tweet_filter, :id => :tweet_filter, :size => 20}
+        %input{:type => :search, :name => :tweet_filter, :id => :tweet_filter, :size => 15}
         %input{:type => :radio, :name => :search_type, :value => :screen_name}
         %label{:for => :screen_name} ユーザ名:
-        %input{:type => :search, :name => :screen_name, :id => :screen_name, :size => 20}
+        %select#followers{:name => :followers}
+        %input{:type => :search, :name => :screen_name, :id => :screen_name, :size => 15}
         %input{:type => :button, :value => '検索', :id => 'search_tweets_button'}
         %img.loading{:src => '/img/ajax-loader.gif'}
         .content

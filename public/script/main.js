@@ -3,6 +3,7 @@ var Issues;
 var SelectedIssueSubject;
 var SelectedTweet;
 var LastTweetID;
+var Followers = [];
 //var Favorites = {};
 
 $(document).ready(function(){
@@ -22,6 +23,16 @@ $(document).ready(function(){
       beforeGetTweet();
     }
   });
+  $('#followers').change(function() {
+    var i = parseInt($('#followers option:selected').attr('value'));
+    var screenName = Followers[i];
+    $('#screen_name').val(screenName);
+    var type = $('input[name="search_type"]:checked').val();
+    if(type == 'screen_name') {
+      removeTweets();
+      beforeGetTweet();
+    }
+  });
   $('#issue_filter').change(function() {
     filterIssue();
   });
@@ -36,30 +47,14 @@ $(document).ready(function(){
   //  getTweets(filterText, function(){}, function(){});
   //});
   $('#search_tweets_button').click(function() {
-    //console.log(filterText);
-    //getTweets(filterText);
     removeTweets();
-    //var type = $('input[name="search_type"]:checked').val();
-    //if(type == 'keyword') {
-    //  filterText = $('#tweet_filter').val();
-    //  getTweets({'type': type, 'keyword': filterText});
-    //}
-    //else if(type == 'screen_name') {
-    //  screenName = $('#screen_name').val();
-    //  getTweets({'type': type, 'screen_name': screenName});
-    //}
     beforeGetTweet();
   });
-  $('#next_100_button').click(function() {
-    filterText = $('#tweet_filter').val();
-    //console.log(filterText);
-    //getTweets(filterText);
-    //removeTweets();
-    //getTweets();
-    //var type = $('input[name="search_type"]:checked').val();
-    //getTweets({'type': type, 'keyword': filterText});
-    beforeGetTweet();
-  });
+  //$('#next_100_button').click(function() {
+  //  filterText = $('#tweet_filter').val();
+  //  beforeGetTweet();
+  //});
+  getFollowers();
   getCategories();
   //setStatsu('ふぁぼを取得中');
   //getFavorites(function() {
@@ -97,6 +92,33 @@ var filterIssue = function() {
     }
   }
   setIssuesToTable(filteredIssue, function() {});
+}
+
+var getFollowers = function() {
+  Followers = [];
+  $.ajax({
+    'url': '/followers.json',
+    'data': {},
+    'success': function(data) {
+      //var categories = data.issue_categories;
+      Followers = data;
+      for(var i=0; i<Followers.length; i++) {
+        var screenName = Followers[i];
+        //Categories[category.id] = category.name;
+        //console.log(category.name);
+        var row = '<option value="' + i + '">' + screenName + '</option>';
+        //console.log(row);
+        //$('#categories').append(row);
+        $('#followers').append(row);
+      }
+      var i = parseInt($('#followers option:selected').attr('value'));
+      var screenName = Followers[i];
+      $('#screen_name').val(screenName);
+    },
+    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+      alert('フォロワーの読み込みに失敗しました');
+    }
+  });
 }
 
 var getCategories = function() {

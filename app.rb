@@ -184,6 +184,21 @@ get '/tweets.json' do
   tweets.to_json
 end
 
+get '/followers.json' do
+  client = Twitter::REST::Client.new do |config|
+    config.consumer_key        = TWITTER_CONSUMER_KEY
+    config.consumer_secret     = TWITTER_CONSUMER_SECRET
+    config.access_token        = session[:user_twitter_access_token]
+    config.access_token_secret = session[:user_twitter_access_token_secret]
+  end
+  #client = settings.twitter_client
+  followers = client.followers('posterdone').to_a
+  followers = followers.map{|f| f.screen_name}
+  p followers.size
+  content_type :json
+  followers.to_json
+end
+
 get '/favorites.json' do
   redis = settings.redis
   #client = Twitter::REST::Client.new do |config|
