@@ -116,7 +116,7 @@ var getFollowers = function() {
       $('#screen_name').val(screenName);
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
-      alert('フォロワーの読み込みに失敗しました');
+      alert('フォロワーの読み込みに失敗しました\nTwitterユーザの切り替えを行ってみてください');
     }
   });
 }
