@@ -154,7 +154,7 @@ var getIssues = function(categoryID) {
       setIssuesToTable(issues, function() {
         $('#issues img.loading').css('visibility', 'hidden');  // visible/hidden
         if(issues.length <= 0) {
-          alert('データがありません');
+          alert('この地区は全て貼付け済みです！');
         }
       });
     },
