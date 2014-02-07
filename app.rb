@@ -16,6 +16,8 @@ TWITTER_ACCESS_TOKEN    = ENV['TWITTER_ACCESS_TOKEN']
 TWITTER_ACCESS_SECRET   = ENV['TWITTER_ACCESS_SECRET']
 SHIRASETE_API_KEY       = ENV['SHIRASETE_API_KEY']
 
+DIGGING_TWEETS_PER_USER = 1500
+
 SHIRASETE_BASE_URL = "http://beta.shirasete.jp/"
 SHIRASETE_CATEGORIES = "http://beta.shirasete.jp/projects/22/issue_categories.json?key=#{SHIRASETE_API_KEY}"
 
@@ -153,7 +155,7 @@ get '/tweets.json' do
       p _tweet_objects.count
       break if _tweet_objects.count <= 0
       tweet_objects += _tweet_objects
-      break if tweet_objects.count > 1000
+      break if tweet_objects.count > DIGGING_TWEETS_PER_USER
     end
     tweet_objects.each do |tweet|
       if tweet.text =~ /posterdone/ or tweet.text =~ /#家入ポスター貼ってるってよ/
