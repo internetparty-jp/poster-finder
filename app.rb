@@ -184,6 +184,7 @@ get '/tweets.json' do
   tweets.to_json
 end
 
+# @posterdone のフォロワー一覧を取得する
 get '/followers.json' do
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
@@ -193,6 +194,7 @@ get '/followers.json' do
   end
   #client = settings.twitter_client
   followers = client.followers('posterdone').to_a
+  followers.reject!{|f| f.protected}
   followers = followers.map{|f| f.screen_name}
   p followers.size
   content_type :json
@@ -201,40 +203,13 @@ end
 
 get '/favorites.json' do
   redis = settings.redis
-  #client = Twitter::REST::Client.new do |config|
-  #  config.consumer_key        = TWITTER_CONSUMER_KEY
-  #  config.consumer_secret     = TWITTER_CONSUMER_SECRET
-  #  config.access_token        = session[:user_twitter_access_token]
-  #  config.access_token_secret = session[:user_twitter_access_token_secret]
-  #end
-  #client = settings.twitter_client
-  #favorites = []
-  #loop do
-  #  options = {:count => 100}
-  #  if favorites.count > 0
-  #    options[:max_id] = favorites.last - 1
-  #  end
-  #  _favorites = []
-  #  begin
-  #    client.favorites('posterdone', options).each do |t|
-  #      _favorites << t.id
-  #      p t.id
-  #      redis.hset(REDIS_KEY, t.id, true)
-  #    end
-  #  rescue => e
-  #    p e
-  #    break
-  #  end
-  #  p _favorites.count
-  #  break if _favorites.count == 0
-  #  favorites += _favorites
-  #end
-  #p favorites.count
   all_favs = redis.hkeys(REDIS_KEY)
   content_type :json
   all_favs.to_json
 end
 
+# ツィートをふぁぼってRedisに記録する
+# ふぁぼに失敗した場合は無視
 post '/favorite.json' do
   redis = settings.redis
   tweet_uri = params[:tweet_uri]

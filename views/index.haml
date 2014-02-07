@@ -14,22 +14,46 @@
     #wrap
       #tweets
         %h2 Twitter
-        %input{:type => :radio, :name => :search_type, :value => :keyword, :checked => :checked}
-        %label{:for => :tweet_filter} キーワード:
-        %input{:type => :search, :name => :tweet_filter, :id => :tweet_filter, :size => 15}
-        %input{:type => :radio, :name => :search_type, :value => :screen_name}
-        %label{:for => :screen_name} ユーザ名:
-        %select#followers{:name => :followers}
-        %input{:type => :search, :name => :screen_name, :id => :screen_name, :size => 15}
-        %input{:type => :button, :value => '検索', :id => 'search_tweets_button'}
-        %img.loading{:src => '/img/ajax-loader.gif'}
+        %table#twitter_search_ui
+          %tr
+            %td
+              %input#radio_search_type_keyword{:type => :radio, :name => :search_type, :value => :keyword, :checked => :checked}
+              %label{:for => :radio_search_type_keyword} キーワードでツィートを検索
+            %td.column_2
+              %label{:for => :tweet_filter} キーワード:
+            %td
+              %input{:type => :search, :name => :tweet_filter, :id => :tweet_filter, :size => 15}
+            %td{:rowspan => 2}
+              %input#search_tweets_button{:type => :button, :value => '検索'}
+              %img.loading{:src => '/img/ajax-loader.gif'}
+          %tr
+            %td
+              %input#radio_search_type_screen_name{:type => :radio, :name => :search_type, :value => :screen_name}
+              %label{:for => :radio_search_type_screen_name} 指定したユーザのツィートを表示
+            %td.column_2
+              %label{:for => :screen_name} ユーザ名:
+            %td
+              %select#followers{:name => :followers}
+              %input{:type => :search, :name => :screen_name, :id => :screen_name, :size => 12}
         .content
           %table
         -#%input{:type => :button, :value => '次の100件を取得', :id => :next_100_button}
       #issues
         %h2 Shirasete
+        %label{:for => :categories}
+          地域を選択（
+          %a#help_categories{:href => '/#'} ？
+          ）:
         %select#categories{:name => :category}
-        %input{:type => :checkbox, :name => :enable_auto_search, :id => :enable_auto_search} 区名でTwitter検索する
+        %input#enable_auto_search{:type => :checkbox, :name => :enable_auto_search} 
+          地域選択で同時にTwitter検索する（
+          %a#help_enable_auto_search{:href => '/#'} ？
+          ）
+        %br
+        %label{:for => :filter_issues_button}
+          掲示板番号で絞り込み（
+          %a#help_filter_issues_button{:href => '/#'} ？
+          ）:
         %input{:type => :search, :name => :issue_filter, :id => :issue_filter, :size => 30}
         %input{:type => :button, :value => '絞り込み', :id => 'filter_issues_button'}
         %img.loading{:src => '/img/ajax-loader.gif'}

@@ -54,6 +54,15 @@ $(document).ready(function(){
   //  filterText = $('#tweet_filter').val();
   //  beforeGetTweet();
   //});
+  $('#help_categories').click(function() {
+    alert('終了処理を行う地域を選択します。ツィートの写真に写っている（またはツィートに書いてある）地区名を選択してください。');
+  });
+  $('#help_enable_auto_search').click(function() {
+    alert('ここにチェックをいれると、地区を選択したときに、同時に地区名でTwitter検索を行います。\n（ただ、写真だけのツィートや、地区名の表記が曖昧なツィートも多いので、あまりあてにしないでください）');
+  });
+  $('#help_filter_issues_button').click(function() {
+    alert('例えば、「三鷹市29-7」を探したい場合は、「29-7」と半角で入力して、[絞り込み]を押します。\n三鷹市の投票区29のレポートのみ表示したい場合は、「29-」と入力して、[絞り込み]を押します。');
+  });
   getFollowers();
   getCategories();
   //setStatsu('ふぁぼを取得中');
@@ -251,7 +260,7 @@ var getTweets = function(opts) {
     },
     'error': function(XMLHttpRequest, textStatus, errorThrown) {
       //alert('getTweets: ' + textStatus);
-      alert('TwitterAPIが上限に達したか、鍵アカウントのツィートを読み込もうとしました。\nユーザの切り替えを試してみてください。');
+      alert('TwitterAPIのアクセス可能回数の上限に達しました。\nしばらく休憩（約15分で回復します）するか、「Twitterユーザの切り替え」を試してみてください。');
       if(errorback) {
         errorback();
       }
