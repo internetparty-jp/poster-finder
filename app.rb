@@ -5,9 +5,11 @@ require 'twitter'
 require 'faraday'
 require 'omniauth'
 require 'open-uri'
+require 'redis'
 require 'json'
 require 'pp'
 
+REDISTOGO_URL           = ENV["REDISTOGO_URL"]
 TWITTER_CONSUMER_KEY    = ENV['TWITTER_CONSUMER_KEY']
 TWITTER_CONSUMER_SECRET = ENV['TWITTER_CONSUMER_SECRET']
 TWITTER_ACCESS_TOKEN    = ENV['TWITTER_ACCESS_TOKEN']
@@ -15,8 +17,12 @@ TWITTER_ACCESS_SECRET   = ENV['TWITTER_ACCESS_SECRET']
 SHIRASETE_API_KEY       = ENV['SHIRASETE_API_KEY']
 SHIRASETE_PROJECT_ID = ENV['SHIRASETE_PROJECT_ID']
 
+DIGGING_TWEETS_PER_USER = 1500
+
 SHIRASETE_BASE_URL = "http://beta.shirasete.jp/"
 SHIRASETE_CATEGORIES = URI.join(SHIRASETE_BASE_URL, "/projects/#{SHIRASETE_PROJECT_ID}/issue_categories.json?key=#{SHIRASETE_API_KEY}")
+
+REDIS_KEY = 'posterfinder:favorites'
 
 configure do
   use Rack::Auth::Basic do |username, password|
@@ -26,6 +32,14 @@ configure do
   enable :sessions
   set :session_secret, 'aeiha3889aow'
   enable :sessions, :logging
+
+  if REDISTOGO_URL 
+    uri = URI.parse(REDISTOGO_URL)
+    redis = Redis.new(:host => uri.host, :port => uri.port, :password => uri.password)
+  else
+    redis = Redis.new
+  end
+  set :redis, redis
 
   use OmniAuth::Builder do
     provider :twitter, TWITTER_CONSUMER_KEY, TWITTER_CONSUMER_SECRET
@@ -114,8 +128,13 @@ put '/issues/:id.json' do
 end
 
 get '/tweets.json' do
-  content_type :json
-  filter_text = params[:filter_text];
+  redis = settings.redis
+  filter_text = params[:filter_text]
+  screen_name = params[:screen_name]
+  max_id = params[:max_id]
+  puts "max_id: #{max_id}"
+  puts "filter_text: #{filter_text}"
+  puts "screen_name: #{screen_name}"
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
     config.consumer_secret     = TWITTER_CONSUMER_SECRET
@@ -123,18 +142,53 @@ get '/tweets.json' do
     config.access_token_secret = session[:user_twitter_access_token_secret]
   end
   #client = settings.twitter_client
-  tweets = []
-  client.search("to:posterdone #{filter_text}", :count => 100).each do |tweet|
-    t = {:id => tweet.id, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
-    if tweet.media[0]
-      t[:photo_uri] = tweet.media[0].media_uri.to_s
-    end
-    tweets << t
+  options = {:count => 100}
+  if max_id
+    options[:max_id] = max_id.to_i - 1
   end
+  tweets = []
+  if screen_name
+    tweet_objects = []
+    loop do
+      options[:max_id] = tweet_objects.last.id.to_i-1 if tweet_objects.count > 0
+      _tweet_objects = client.user_timeline(screen_name, options)
+      #pp _tweet_objects
+      p _tweet_objects.count
+      break if _tweet_objects.count <= 0
+      tweet_objects += _tweet_objects
+      break if tweet_objects.count > DIGGING_TWEETS_PER_USER
+    end
+    tweet_objects.each do |tweet|
+      if tweet.text =~ /posterdone/ or tweet.text =~ /#家入ポスター貼ってるってよ/
+        if tweet.favorited
+          redis.hset(REDIS_KEY, tweet.id.to_s, true)
+        elsif !redis.hget(REDIS_KEY, tweet.id.to_s)
+          t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+          if tweet.media[0]
+            t[:photo_uri] = tweet.media[0].media_uri.to_s
+          end
+          tweets << t
+        end # if
+      end # if
+    end
+    #pp tweets
+  else
+    client.search("posterdone #{filter_text}", options).each do |tweet|
+      if !redis.hget(REDIS_KEY, tweet.id.to_s)
+        t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
+        if tweet.media[0]
+          t[:photo_uri] = tweet.media[0].media_uri.to_s
+        end
+        tweets << t
+      end
+    end
+  end
+  content_type :json
   tweets.to_json
 end
 
-get '/favorites.json' do
+# @posterdone のフォロワー一覧を取得する
+get '/followers.json' do
   client = Twitter::REST::Client.new do |config|
     config.consumer_key        = TWITTER_CONSUMER_KEY
     config.consumer_secret     = TWITTER_CONSUMER_SECRET
@@ -142,30 +196,43 @@ get '/favorites.json' do
     config.access_token_secret = session[:user_twitter_access_token_secret]
   end
   #client = settings.twitter_client
-  favorites = []
-  loop do
-    options = {:count => 100}
-    if favorites.count > 0
-      options[:max_id] = favorites.last - 1
-    end
-    _favorites = []
-    client.favorites('posterdone',  options).each do |t|
-      _favorites << t.id
-    end
-    p _favorites.count
-    break if _favorites.count == 0
-    favorites += _favorites
-  end
+  followers = client.followers('posterdone').to_a
+  followers.reject!{|f| f.protected}
+  followers = followers.map{|f| f.screen_name}
+  p followers.size
   content_type :json
-  favorites.to_json
+  followers.to_json
 end
 
+get '/favorites.json' do
+  redis = settings.redis
+  all_favs = redis.hkeys(REDIS_KEY)
+  content_type :json
+  all_favs.to_json
+end
+
+# ツィートをふぁぼってRedisに記録する
+# ふぁぼに失敗した場合は無視
 post '/favorite.json' do
+  redis = settings.redis
   tweet_uri = params[:tweet_uri]
-  p tweet_uri
+  tweet_id = params[:tweet_id]
+  #redis.hset(REDIS_KEY, tweet_id, true)
+  puts "tweet_id: #{tweet_id}"
   content_type :json
   client = settings.twitter_client
-  p client.favorite(tweet_uri)
+  begin
+    ts = client.favorite(tweet_uri)
+    p tweet_uri
+    p tweet_id
+    p ts
+    #if t = ts.first
+    #end
+  rescue => e
+    puts "#{tweet_id}: #{e}"
+  end
+  redis.hset(REDIS_KEY, tweet_id, true)
+  puts "hget: #{redis.hget(REDIS_KEY, tweet_id)}"
   {}.to_json
 end
 

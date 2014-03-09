@@ -20,6 +20,10 @@ body {
   overflow: scroll;
   height: 500px;
 }
+h2 {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
 tr {
   border: solid;
   border-width: 1px;
@@ -33,7 +37,7 @@ td.radio {
 td img {
   max-width: 480px;
 }
-input[type="radio"] {
+.content td input[type="radio"] {
   width: 2em;
   height: 2em;
 }
@@ -67,4 +71,14 @@ tr.odd {
 }
 p#status {
   margin: 0;
+}
+table#twitter_search_ui td {
+  padding: 0;
+}
+#twitter_search_ui td.column_2 {
+  padding-left: 0.2em;
+  text-align: right;
+}
+#search_tweets_button {
+  height: 2em;
 }

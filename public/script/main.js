@@ -2,7 +2,9 @@ var Categories;
 var Issues;
 var SelectedIssueSubject;
 var SelectedTweet;
-var Favorites = {};
+var LastTweetID;
+var Followers = [];
+//var Favorites = {};
 
 $(document).ready(function(){
   //console.log('Hello');
@@ -12,10 +14,24 @@ $(document).ready(function(){
     var categoryID = parseInt($('#categories option:selected').attr('value'));
     //console.log(categoryID);
     getIssues(categoryID);
-    var filterText = Categories[categoryID];
-    //$('#tweet_filter').attr('value', filterText);
-    $('#tweet_filter').val(filterText);
-    getTweets(filterText);
+    if($('#enable_auto_search').prop("checked")){ 
+      var filterText = Categories[categoryID];
+      //$('#tweet_filter').attr('value', filterText);
+      $('#tweet_filter').val(filterText);
+      //getTweets(filterText);
+      removeTweets();
+      beforeGetTweet();
+    }
+  });
+  $('#followers').change(function() {
+    var i = parseInt($('#followers option:selected').attr('value'));
+    var screenName = Followers[i];
+    $('#screen_name').val(screenName);
+    var type = $('input[name="search_type"]:checked').val();
+    if(type == 'screen_name') {
+      removeTweets();
+      beforeGetTweet();
+    }
   });
   $('#issue_filter').change(function() {
     filterIssue();
@@ -24,26 +40,53 @@ $(document).ready(function(){
     //console.log('filter_issues_button');
     filterIssue();
   });
-  $('#tweet_filter').change(function() {
-    filterText = $('#tweet_filter').val();
-    console.log(filterText);
-    getTweets(filterText);
-  });
+  //$('#tweet_filter').change(function() {
+  //  filterText = $('#tweet_filter').val();
+  //  //console.log(filterText);
+  //  removeTweets();
+  //  getTweets(filterText, function(){}, function(){});
+  //});
   $('#search_tweets_button').click(function() {
-    filterText = $('#tweet_filter').val();
-    console.log(filterText);
-    getTweets(filterText);
+    removeTweets();
+    beforeGetTweet();
   });
+  //$('#next_100_button').click(function() {
+  //  filterText = $('#tweet_filter').val();
+  //  beforeGetTweet();
+  //});
+  $('#help_categories').click(function() {
+    alert('終了処理を行う地域を選択します。ツィートの写真に写っている（またはツィートに書いてある）地区名を選択してください。');
+  });
+  $('#help_enable_auto_search').click(function() {
+    alert('ここにチェックをいれると、地区を選択したときに、同時に地区名でTwitter検索を行います。\n（ただ、写真だけのツィートや、地区名の表記が曖昧なツィートも多いので、あまりあてにしないでください）');
+  });
+  $('#help_filter_issues_button').click(function() {
+    alert('例えば、「三鷹市29-7」を探したい場合は、「29-7」と半角で入力して、[絞り込み]を押します。\n三鷹市の投票区29のレポートのみ表示したい場合は、「29-」と入力して、[絞り込み]を押します。');
+  });
+  getFollowers();
   getCategories();
-  setStatsu('ふぁぼを取得中');
-  getFavorites(function() {
-    $('#mask').css('visibility', 'hidden');  // visible/hidden
-    setStatsu('ふぁぼの取得完了');
-  }, function(){
-    $('#mask').css('visibility', 'hidden');  // visible/hidden
-    setStatsu('ふぁぼの取得失敗 <a href="/auth/twitter">Twitter認証をやりなおす</a>');
-  });
+  //setStatsu('ふぁぼを取得中');
+  //getFavorites(function() {
+  //  $('#mask').css('visibility', 'hidden');  // visible/hidden
+  //  setStatsu('ふぁぼの取得完了');
+  //}, function(){
+  //  $('#mask').css('visibility', 'hidden');  // visible/hidden
+  //  setStatsu('ふぁぼの取得失敗 <a href="/auth/twitter">Twitter認証をやりなおす</a>');
+  //});
+  $('#mask').css('visibility', 'hidden');  // visible/hidden
 });
+
+var beforeGetTweet = function() {
+  var type = $('input[name="search_type"]:checked').val();
+  if(type == 'keyword') {
+    filterText = $('#tweet_filter').val();
+    getTweets({'type': type, 'keyword': filterText});
+  }
+  else if(type == 'screen_name') {
+    screenName = $('#screen_name').val();
+    getTweets({'type': type, 'screen_name': screenName});
+  }
+}
 
 var filterIssue = function() {
   $('#issues .content table tr').remove();
@@ -58,6 +101,33 @@ var filterIssue = function() {
     }
   }
   setIssuesToTable(filteredIssue, function() {});
+}
+
+var getFollowers = function() {
+  Followers = [];
+  $.ajax({
+    'url': '/followers.json',
+    'data': {},
+    'success': function(data) {
+      //var categories = data.issue_categories;
+      Followers = data;
+      for(var i=0; i<Followers.length; i++) {
+        var screenName = Followers[i];
+        //Categories[category.id] = category.name;
+        //console.log(category.name);
+        var row = '<option value="' + i + '">' + screenName + '</option>';
+        //console.log(row);
+        //$('#categories').append(row);
+        $('#followers').append(row);
+      }
+      var i = parseInt($('#followers option:selected').attr('value'));
+      var screenName = Followers[i];
+      $('#screen_name').val(screenName);
+    },
+    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+      alert('フォロワーの読み込みに失敗しました\nTwitterユーザの切り替えを行ってみてください');
+    }
+  });
 }
 
 var getCategories = function() {
@@ -93,7 +163,7 @@ var getIssues = function(categoryID) {
       setIssuesToTable(issues, function() {
         $('#issues img.loading').css('visibility', 'hidden');  // visible/hidden
         if(issues.length <= 0) {
-          alert('データがありません');
+          alert('この地区は全て貼付け済みです！');
         }
       });
     },
@@ -126,19 +196,41 @@ var setIssuesToTable = function(issues, callback) {
   callback();
 }
 
-var getTweets = function(filterText) {
-  $('#tweets img.loading').css('visibility', 'visible');  // visible/hidden
+var removeTweets = function() {
   $('#tweets .content table tr').remove();
+  LastTweetID = null;
+  SelectedTweet = null;
+}
+
+var getTweets = function(opts) {
+  $('#tweets img.loading').css('visibility', 'visible');  // visible/hidden
+  //$('#tweets .content table tr').remove();
+  var callback = opts['callback'];
+  var errorback = opts['errorback'];
+  var data = {};
+  console.log(opts);
+  if(opts['type'] == 'screen_name') {
+    data['screen_name'] = opts['screen_name'];
+  }
+  else {
+    data['filter_text'] = opts['keyword'];
+  }
+  if(LastTweetID){
+    data['max_id'] = LastTweetID;
+  }
   $.ajax({
     'url': '/tweets.json',
-    'data': {'filter_text': filterText},
+    'data': data,
     'success': function(tweets) {
       //console.log(tweets);
       for(var i=0; i<tweets.length; i++) {
         var tweet = tweets[i];
-        if(!tweet.favorited && !Favorites[tweet.id]) {
+        //if(!tweet.favorited && !Favorites[tweet.id]) {
+        if(true) {
           var radioID = 'tweet_' + tweet.id;
           var row = '<tr class="' + cellClass(i) + '" id="tweet_tr_' + tweet.id + '">';
+          var buttonID = 'already_favorited_button_' + tweet.id;
+          row = row + '<td><input type="button" id="' + buttonID + '" value="終了済"></td>';
           if(tweet.photo_uri) {
             row = row + '<td>' + tweet.text + '<img src="' + tweet.photo_uri+ '" /></td>';
           }
@@ -150,10 +242,27 @@ var getTweets = function(filterText) {
           row = row + '</tr>';
           //console.log(row);
           $('#tweets .content table').append(row);
-          $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
           //$('#' + radioID).click(onTweetRadioClick);
+          $('#' + buttonID).click(getAlreadyFavoritedButtonClickHandler(tweet));
           $('#' + radioID).click(getTweetRadioButtonClickHandler(tweet));
         }
+      }
+      console.log(tweets);
+      if(tweets.length > 0) {
+        var t = tweets[tweets.length-1];
+        LastTweetID = t.id;
+        console.log(LastTweetID);
+      }
+      $('#tweets img.loading').css('visibility', 'hidden');  // visible/hidden
+      if(callback) {
+        callback();
+      }
+    },
+    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+      //alert('getTweets: ' + textStatus);
+      alert('TwitterAPIのアクセス可能回数の上限に達しました。\nしばらく休憩（約15分で回復します）するか、「Twitterユーザの切り替え」を試してみてください。');
+      if(errorback) {
+        errorback();
       }
     }
   });
@@ -181,10 +290,11 @@ var getIssueButtonClickHandler = function(issue) {
         $('#mask').css('visibility', 'visible');  // visible/hidden
         closeIssueWithTweetURI(issue.id, SelectedTweet.uri, function() {
           //console.log('closed');
-          favoriteTweet(SelectedTweet.uri, function() {
+          favoriteTweet(SelectedTweet, function() {
             //console.log('faved');
-            $('#issue_tr_' + parseInt(issue.id)).remove();
+            $('#issue_tr_' + issue.id).remove();
             $('#tweet_tr_' + SelectedTweet.id).remove();
+            SelectedTweet = null;
             $('#mask').css('visibility', 'hidden');  // visible/hidden
           });
         });
@@ -205,6 +315,21 @@ var getTweetRadioButtonClickHandler = function(tweet) {
   return f;
 }
 
+var getAlreadyFavoritedButtonClickHandler = function(tweet) {
+  var f = function(e) {
+    var ok = window.confirm('報告:"' + tweet.text + '" をチェック済みツィートとして記録します');
+    if(ok) {
+      $('#mask').css('visibility', 'visible');  // visible/hidden
+      favoriteTweet(tweet, function() {
+        $('#tweet_tr_' + tweet.id).remove();
+        SelectedTweet = null;
+        $('#mask').css('visibility', 'hidden');  // visible/hidden
+      });
+    }
+  }
+  return f;
+}
+
 var closeIssueWithTweetURI = function(issueID, tweetURI, callback) {
   $.ajax({
     'type': 'PUT',
@@ -220,11 +345,12 @@ var closeIssueWithTweetURI = function(issueID, tweetURI, callback) {
   });
 }
 
-var favoriteTweet = function(tweetURI, callback) {
+var favoriteTweet = function(tweet, callback) {
+  console.log(tweet.id);
   $.ajax({
     'type': 'POST',
     'url': '/favorite.json',
-    'data': {'tweet_uri': tweetURI},
+    'data': {'tweet_id': tweet.id, 'tweet_uri': tweet.uri},
     'success': function(result) {
       //console.log(result);
       callback();
@@ -235,23 +361,24 @@ var favoriteTweet = function(tweetURI, callback) {
   });
 }
 
-var getFavorites = function(callback, errorback) {
-  $.ajax({
-    'type': 'GET',
-    'url': '/favorites.json',
-    'data': {},
-    'success': function(favorites) {
-      for(var i=0; i<favorites.length; i++) {
-        Favorites[favorites[i]] = true;
-      }
-      callback();
-    },
-    'error': function(XMLHttpRequest, textStatus, errorThrown) {
-      alert(textStatus);
-      errorback();
-    }
-  });
-}
+//var getFavorites = function(callback, errorback) {
+//  $.ajax({
+//    'type': 'GET',
+//    'url': '/favorites.json',
+//    'data': {},
+//    'success': function(favorites) {
+//      console.log(favorites.length);
+//      for(var i=0; i<favorites.length; i++) {
+//        Favorites[favorites[i]] = true;
+//      }
+//      callback();
+//    },
+//    'error': function(XMLHttpRequest, textStatus, errorThrown) {
+//      alert(textStatus);
+//      errorback();
+//    }
+//  });
+//}
 
 var setStatsu = function(statusText) {
   $('#status').html(statusText);
