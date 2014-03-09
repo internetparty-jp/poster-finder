@@ -5,6 +5,7 @@ $ TWITTER_CONSUMER_KEY=your_consumer_key \
 > TWITTER_ACCESS_TOKEN=your_access_token \
 > TWITTER_ACCESS_SECRET=your_access_secret \
 > SHIRASETE_API_KEY=your_api_key \
+> SHIRASETE_PROJECT_ID=your_project_id \
 > BASIC_AUTH_USERNAME=username \
 > BASIC_AUTH_PASSWORD=password \
 > bundle exec rackup

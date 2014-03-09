@@ -13,9 +13,10 @@ TWITTER_CONSUMER_SECRET = ENV['TWITTER_CONSUMER_SECRET']
 TWITTER_ACCESS_TOKEN    = ENV['TWITTER_ACCESS_TOKEN']
 TWITTER_ACCESS_SECRET   = ENV['TWITTER_ACCESS_SECRET']
 SHIRASETE_API_KEY       = ENV['SHIRASETE_API_KEY']
+SHIRASETE_PROJECT_ID = ENV['SHIRASETE_PROJECT_ID']
 
 SHIRASETE_BASE_URL = "http://beta.shirasete.jp/"
-SHIRASETE_CATEGORIES = "http://beta.shirasete.jp/projects/22/issue_categories.json?key=#{SHIRASETE_API_KEY}"
+SHIRASETE_CATEGORIES = URI.join(SHIRASETE_BASE_URL, "/projects/#{SHIRASETE_PROJECT_ID}/issue_categories.json?key=#{SHIRASETE_API_KEY}")
 
 configure do
   use Rack::Auth::Basic do |username, password|
@@ -78,7 +79,7 @@ get '/issues.json' do
   issues = []
 
   loop do
-    shirasete_issues_url = "http://beta.shirasete.jp/issues.json?project_id=22&category_id=#{category_id}&sort=updated_on:desc&offset=#{offset}&limit=#{limit}&key=#{SHIRASETE_API_KEY}"
+    shirasete_issues_url = "http://beta.shirasete.jp/issues.json?project_id=#{SHIRASETE_PROJECT_ID}&category_id=#{category_id}&sort=updated_on:desc&offset=#{offset}&limit=#{limit}&key=#{SHIRASETE_API_KEY}"
     p shirasete_issues_url
     json = open(shirasete_issues_url).read
     result = JSON.parse(json)
