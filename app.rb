@@ -52,6 +52,7 @@ configure do
     config.access_token_secret = TWITTER_ACCESS_SECRET
   end
   set :twitter_client, client
+  set :twitter_screen_name, client.user.screen_name
   
   conn = Faraday::Connection.new(:url => SHIRASETE_BASE_URL) do |builder|
     builder.use Faraday::Request::UrlEncoded  # リクエストパラメータを URL エンコードする
@@ -159,7 +160,8 @@ get '/tweets.json' do
       break if tweet_objects.count > DIGGING_TWEETS_PER_USER
     end
     tweet_objects.each do |tweet|
-      if tweet.text =~ /posterdone/ or tweet.text =~ /#家入ポスター貼ってるってよ/
+      #if tweet.text =~ /posterdone/ or tweet.text =~ /#家入ポスター貼ってるってよ/
+      if tweet.text =~ /#{settings.twitter_screen_name}/
         if tweet.favorited
           redis.hset(REDIS_KEY, tweet.id.to_s, true)
         elsif !redis.hget(REDIS_KEY, tweet.id.to_s)
@@ -173,7 +175,7 @@ get '/tweets.json' do
     end
     #pp tweets
   else
-    client.search("posterdone #{filter_text}", options).each do |tweet|
+    client.search("#{settings.twitter_screen_name} #{filter_text}", options).each do |tweet|
       if !redis.hget(REDIS_KEY, tweet.id.to_s)
         t = {:id => tweet.id.to_s, :uri => tweet.uri, :text => tweet.text, :favorited => tweet.favorited}
         if tweet.media[0]
@@ -196,7 +198,7 @@ get '/followers.json' do
     config.access_token_secret = session[:user_twitter_access_token_secret]
   end
   #client = settings.twitter_client
-  followers = client.followers('posterdone').to_a
+  followers = client.followers(settings.twitter_screen_name).to_a
   followers.reject!{|f| f.protected}
   followers = followers.map{|f| f.screen_name}
   p followers.size
