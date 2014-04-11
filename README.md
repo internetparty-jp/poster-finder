@@ -3,7 +3,7 @@ Poster Finder
 
 Twitterで送られてきた貼り付け完了報告をshirasete.jpに反映させる
 
-# development
+## development
 
 ```bash
 $ bundle install --path vendor/bundle
@@ -19,7 +19,7 @@ $ TWITTER_CONSUMER_KEY=your_consumer_key \
 ```
 
 
-# deploy to heroku
+## deploy to heroku
 
 ```bash
 $ git remote add heroku git@heroku.com:your-app-name.git
